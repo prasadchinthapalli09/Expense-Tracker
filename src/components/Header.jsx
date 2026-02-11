@@ -84,11 +84,11 @@ const Header = ({ activeSection, onSectionChange, user }) => {
                                 <Clock size={14} className="text-blue-500" />
                                 <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                                     {user?.statsFrequency === 'none' ? 'No Reports' :
-                                        user?.statsFrequency === 'weekly' ? 'Weekly' :
-                                            user?.statsFrequency === 'monthly' ? 'Monthly' :
-                                                user?.statsFrequency === '3months' ? '3 Months' :
-                                                    user?.statsFrequency === '6months' ? '6 Months' :
-                                                        user?.statsFrequency === 'yearly' ? 'Yearly' : 'Report'}
+                                        user?.statsFrequency === 'weekly' ? 'Weekly Statistical Report' :
+                                            user?.statsFrequency === 'monthly' ? 'Statistical Report' :
+                                                user?.statsFrequency === '3months' ? '3 Months Statistical Report' :
+                                                    user?.statsFrequency === '6months' ? '6 Months Statistical Report' :
+                                                        user?.statsFrequency === 'yearly' ? 'Yearly Statistical Report' : 'Select Report'}
                                 </span>
                                 <svg className={`w-3 h-3 text-gray-400 transition-transform ${isStatsDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
@@ -104,16 +104,16 @@ const Header = ({ activeSection, onSectionChange, user }) => {
                                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            className="absolute top-full left-0 mt-2 w-56 glass border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden z-20"
+                                            className="absolute top-full left-0 mt-2 w-48 glass border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden z-20"
                                         >
                                             <div className="p-2 space-y-1">
                                                 {[
                                                     { value: 'none', label: 'No Reports' },
-                                                    { value: 'weekly', label: 'Weekly Statistical Report' },
-                                                    { value: 'monthly', label: 'Statistical Report' },
-                                                    { value: '3months', label: '3 Months Statistical Report' },
-                                                    { value: '6months', label: '6 Months Statistical Report' },
-                                                    { value: 'yearly', label: 'Yearly Statistical Report' }
+                                                    { value: 'weekly', label: 'Weekly' },
+                                                    { value: 'monthly', label: 'Monthly' },
+                                                    { value: '3months', label: '3 Months' },
+                                                    { value: '6months', label: '6 Months' },
+                                                    { value: 'yearly', label: 'Yearly' }
                                                 ].map((opt) => (
                                                     <button
                                                         key={opt.value}
