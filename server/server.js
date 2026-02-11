@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const { startStatsWorker } = require('./workers/statsWorker');
 
 const path = require('path');
 dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -17,6 +18,9 @@ app.use(cors({
 
 // Database Connection
 connectDB();
+
+// Start Stats Worker
+startStatsWorker();
 
 // Routes Placeholder
 app.use('/api/auth', require('./routes/authRoutes'));

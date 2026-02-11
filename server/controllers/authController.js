@@ -18,7 +18,7 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, nickname, country, currency_symbol, mobile, googleId } = req.body;
+        const { name, email, password, nickname, country, currency_symbol, mobile, googleId, statsFrequency } = req.body;
 
         if (!name || !email || (!password && !googleId)) {
             return res.status(400).json({ message: 'Please add all required fields' });
@@ -47,7 +47,8 @@ const registerUser = async (req, res) => {
             country,
             currency_symbol,
             mobile,
-            googleId
+            googleId,
+            statsFrequency: statsFrequency || 'monthly'
         });
 
         if (user) {
@@ -117,6 +118,7 @@ const updateProfile = async (req, res) => {
         user.nickname = req.body.nickname || user.nickname;
         user.mobile = req.body.mobile || user.mobile;
         user.currency_symbol = req.body.currency_symbol || user.currency_symbol;
+        user.statsFrequency = req.body.statsFrequency || user.statsFrequency;
 
         const updatedUser = await user.save();
 
@@ -125,6 +127,7 @@ const updateProfile = async (req, res) => {
             name: updatedUser.name,
             email: updatedUser.email,
             currency_symbol: updatedUser.currency_symbol,
+            statsFrequency: updatedUser.statsFrequency,
             token: generateToken(updatedUser._id),
             user_metadata: {
                 name: updatedUser.name,

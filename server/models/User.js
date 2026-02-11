@@ -34,6 +34,15 @@ const UserSchema = new mongoose.Schema({
     },
     mobile: {
         type: String
+    },
+    statsFrequency: {
+        type: String,
+        enum: ['none', 'weekly', 'monthly', '3months', '6months', 'yearly'],
+        default: 'monthly'
+    },
+    lastReportSent: {
+        type: Date,
+        default: Date.now
     }
 }, { timestamps: true });
 
