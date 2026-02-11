@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User as UserIcon, PlusCircle, PieChart, List, Calculator } from 'lucide-react';
+import { LogOut, User as UserIcon, PlusCircle, PieChart, List, Calculator, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import EditProfileModal from './EditProfileModal';
 
 const Header = ({ activeSection, onSectionChange, user }) => {
-    const { logout } = useAuth();
+    const { logout, updateProfile } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -73,7 +73,29 @@ const Header = ({ activeSection, onSectionChange, user }) => {
                     </nav>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                        {/* Report Frequency Selector */}
+                        <div className="hidden sm:flex items-center gap-2 bg-gray-100/50 dark:bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 transition-all">
+                            <Clock size={14} className="text-blue-500" />
+                            <select
+                                value={user?.statsFrequency || 'monthly'}
+                                onChange={async (e) => {
+                                    try {
+                                        await updateProfile({ statsFrequency: e.target.value });
+                                    } catch (error) {
+                                        console.error('Failed to update frequency:', error);
+                                    }
+                                }}
+                                className="bg-transparent text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer appearance-none pr-1"
+                            >
+                                <option value="none">Off</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="3months">3 Months</option>
+                                <option value="6months">6 Months</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
 
                         {/* Profile Actions */}
                         <div className="relative">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Phone, DollarSign, Clock } from 'lucide-react';
+import { X, User, Phone, DollarSign } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Input from './Input';
 import Button from './Button';
@@ -10,7 +10,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
     const [currency, setCurrency] = useState('');
-    const [statsFrequency, setStatsFrequency] = useState('monthly');
     const [loading, setLoading] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -19,7 +18,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
             setName(user.name || '');
             setMobile(user.mobile || '');
             setCurrency(user.currency_symbol || '$');
-            setStatsFrequency(user.statsFrequency || 'monthly');
             setShowDeleteConfirm(false);
         }
     }, [user, isOpen]);
@@ -31,8 +29,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
             await updateProfile({
                 name,
                 mobile,
-                currency_symbol: currency,
-                statsFrequency
+                currency_symbol: currency
             });
 
             onClose();
@@ -101,30 +98,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
                             onChange={(e) => setCurrency(e.target.value)}
                             placeHolder="$"
                         />
-
-                        <div className="mb-4">
-                            <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Report Frequency</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Clock className="text-gray-400 dark:text-gray-500" size={18} />
-                                </div>
-                                <select
-                                    value={statsFrequency}
-                                    onChange={(e) => setStatsFrequency(e.target.value)}
-                                    className="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-blue-500 transition-all shadow-sm dark:shadow-none appearance-none cursor-pointer"
-                                >
-                                    <option value="none">No Statistics</option>
-                                    <option value="weekly">Weekly Report</option>
-                                    <option value="monthly">Monthly Report</option>
-                                    <option value="3months">Every 3 Months</option>
-                                    <option value="6months">Every 6 Months</option>
-                                    <option value="yearly">Yearly Report</option>
-                                </select>
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </div>
-                            </div>
-                        </div>
 
                         <div className="pt-2">
                             <Button type="submit" disabled={loading}>
