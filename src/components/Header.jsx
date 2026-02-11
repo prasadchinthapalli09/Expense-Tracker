@@ -88,12 +88,12 @@ const Header = ({ activeSection, onSectionChange, user }) => {
                                 }}
                                 className="bg-transparent text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer appearance-none pr-1"
                             >
-                                <option value="none">Off</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="3months">3 Months</option>
-                                <option value="6months">6 Months</option>
-                                <option value="yearly">Yearly</option>
+                                <option value="none">No Reports</option>
+                                <option value="weekly">Weekly Statistical Report</option>
+                                <option value="monthly">Monthly Statistical Report</option>
+                                <option value="3months">3 Months Statistical Report</option>
+                                <option value="6months">6 Months Statistical Report</option>
+                                <option value="yearly">Yearly Statistical Report</option>
                             </select>
                         </div>
 
