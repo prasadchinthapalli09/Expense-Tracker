@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gray-950: #030712;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-white text-gray-900 transition-colors duration-300;
+}
+
+.dark body {
+  @apply bg-gray-950 text-white;
+}
+
+/* Glassmorphism helpers for light mode */
+.glass {
+  @apply bg-white/70 backdrop-blur-md border border-gray-200 shadow-xl;
+}
+
+.dark .glass {
+  @apply bg-gray-800/50 backdrop-blur-md border border-gray-700;
+}
