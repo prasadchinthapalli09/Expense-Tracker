@@ -12,6 +12,7 @@ const Header = ({ activeSection, onSectionChange, user }) => {
     const navigate = useNavigate();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isStatsDropdownOpen, setIsStatsDropdownOpen] = useState(false);
 
     const navItems = [
         { id: 'add', label: 'Add', icon: PlusCircle },
@@ -75,26 +76,71 @@ const Header = ({ activeSection, onSectionChange, user }) => {
                     {/* Actions */}
                     <div className="flex items-center gap-3">
                         {/* Report Frequency Selector */}
-                        <div className="hidden sm:flex items-center gap-2 bg-gray-100/50 dark:bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 transition-all">
-                            <Clock size={14} className="text-blue-500" />
-                            <select
-                                value={user?.statsFrequency || 'monthly'}
-                                onChange={async (e) => {
-                                    try {
-                                        await updateProfile({ statsFrequency: e.target.value });
-                                    } catch (error) {
-                                        console.error('Failed to update frequency:', error);
-                                    }
-                                }}
-                                className="bg-transparent text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer appearance-none pr-1"
+                        <div className="hidden lg:flex items-center gap-2 relative group">
+                            <button
+                                onClick={() => setIsStatsDropdownOpen(!isStatsDropdownOpen)}
+                                className="flex items-center gap-2 bg-gray-100/50 dark:bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200/50 dark:hover:bg-gray-700/50"
                             >
-                                <option value="none">No Reports</option>
-                                <option value="weekly">Weekly Statistical Report</option>
-                                <option value="monthly">Statistical Report</option>
-                                <option value="3months">3 Months Statistical Report</option>
-                                <option value="6months">6 Months Statistical Report</option>
-                                <option value="yearly">Yearly Statistical Report</option>
-                            </select>
+                                <Clock size={14} className="text-blue-500" />
+                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                    {user?.statsFrequency === 'none' ? 'No Reports' :
+                                        user?.statsFrequency === 'weekly' ? 'Weekly' :
+                                            user?.statsFrequency === 'monthly' ? 'Monthly' :
+                                                user?.statsFrequency === '3months' ? '3 Months' :
+                                                    user?.statsFrequency === '6months' ? '6 Months' :
+                                                        user?.statsFrequency === 'yearly' ? 'Yearly' : 'Report'}
+                                </span>
+                                <svg className={`w-3 h-3 text-gray-400 transition-transform ${isStatsDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+
+                            <AnimatePresence>
+                                {isStatsDropdownOpen && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-10"
+                                            onClick={() => setIsStatsDropdownOpen(false)}
+                                        />
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute top-full left-0 mt-2 w-56 glass border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden z-20"
+                                        >
+                                            <div className="p-2 space-y-1">
+                                                {[
+                                                    { value: 'none', label: 'No Reports' },
+                                                    { value: 'weekly', label: 'Weekly Statistical Report' },
+                                                    { value: 'monthly', label: 'Statistical Report' },
+                                                    { value: '3months', label: '3 Months Statistical Report' },
+                                                    { value: '6months', label: '6 Months Statistical Report' },
+                                                    { value: 'yearly', label: 'Yearly Statistical Report' }
+                                                ].map((opt) => (
+                                                    <button
+                                                        key={opt.value}
+                                                        onClick={async () => {
+                                                            try {
+                                                                await updateProfile({ statsFrequency: opt.value });
+                                                                setIsStatsDropdownOpen(false);
+                                                            } catch (error) {
+                                                                console.error('Failed to update stats frequency:', error);
+                                                            }
+                                                        }}
+                                                        className={`w-full text-left px-4 py-2 text-xs font-medium rounded-xl transition-colors flex items-center justify-between ${user?.statsFrequency === opt.value
+                                                            ? 'bg-blue-600 text-white'
+                                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                                                            }`}
+                                                    >
+                                                        {opt.label}
+                                                        {user?.statsFrequency === opt.value && (
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
                         </div>
 
                         {/* Profile Actions */}
