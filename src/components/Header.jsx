@@ -90,7 +90,7 @@ const Header = ({ activeSection, onSectionChange, user }) => {
                             >
                                 <option value="none">No Reports</option>
                                 <option value="weekly">Weekly Statistical Report</option>
-                                <option value="monthly">Monthly Statistical Report</option>
+                                <option value="monthly">Statistical Report</option>
                                 <option value="3months">3 Months Statistical Report</option>
                                 <option value="6months">6 Months Statistical Report</option>
                                 <option value="yearly">Yearly Statistical Report</option>
