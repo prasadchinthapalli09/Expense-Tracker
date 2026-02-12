@@ -18,7 +18,11 @@ const Overview = () => {
     const [savingsGoal, setSavingsGoal] = useState(user?.savingsGoal || 0);
     const [isSavingsModalOpen, setIsSavingsModalOpen] = useState(false);
     const [tempSavings, setTempSavings] = useState(user?.savingsGoal || 0);
+    const [monthlySavingsLimit, setMonthlySavingsLimit] = useState(user?.monthlySavingsLimit || 0);
+    const [isSavingsLimitModalOpen, setIsSavingsLimitModalOpen] = useState(false);
+    const [tempSavingsLimit, setTempSavingsLimit] = useState(user?.monthlySavingsLimit || 0);
     const [alertThresholds, setAlertThresholds] = useState({ 80: false, 90: false, 100: false });
+    const [savingsAlertThresholds, setSavingsAlertThresholds] = useState({ 80: false, 90: false, 100: false });
 
     useEffect(() => {
         fetchTransactions();
@@ -33,33 +37,62 @@ const Overview = () => {
             setSavingsGoal(user.savingsGoal);
             setTempSavings(user.savingsGoal);
         }
+        if (user?.monthlySavingsLimit) {
+            setMonthlySavingsLimit(user.monthlySavingsLimit);
+            setTempSavingsLimit(user.monthlySavingsLimit);
+        }
     }, [user]);
 
     useEffect(() => {
         checkBudgetAlerts();
-    }, [transactions, monthlyBudget]);
+    }, [transactions, monthlyBudget, monthlySavingsLimit]);
 
     const checkBudgetAlerts = () => {
-        if (!monthlyBudget || monthlyBudget <= 0) return;
-
-        const percentage = (currentMonthExpenses / monthlyBudget) * 100;
         const newAlerts = { ...alertThresholds };
+        const newSavingsAlerts = { ...savingsAlertThresholds };
         let alerted = false;
 
-        [100, 90, 80].forEach(threshold => {
-            if (percentage >= threshold && !alertThresholds[threshold]) {
-                toast(`⚠️ Budget Alert: You've used ${threshold}% of your limit!`, {
-                    icon: '🔔',
-                    style: { borderRadius: '15px', background: '#111827', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
-                });
-                newAlerts[threshold] = true;
-                alerted = true;
-            } else if (percentage < threshold) {
-                newAlerts[threshold] = false;
-            }
-        });
+        // 1. Standard Budget Alerts
+        if (monthlyBudget > 0) {
+            const percentage = (currentMonthExpenses / monthlyBudget) * 100;
+            [100, 90, 80].forEach(threshold => {
+                if (percentage >= threshold && !alertThresholds[threshold]) {
+                    toast(`⚠️ Budget Alert: You've used ${threshold}% of your limit!`, {
+                        icon: '🔔',
+                        style: { borderRadius: '15px', background: '#111827', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
+                    });
+                    newAlerts[threshold] = true;
+                    alerted = true;
+                } else if (percentage < threshold) {
+                    newAlerts[threshold] = false;
+                }
+            });
+        }
 
-        if (alerted) setAlertThresholds(newAlerts);
+        // 2. Monthly Savings Limit Alerts (Income - Savings Target)
+        if (monthlySavingsLimit > 0 && currentMonthIncome > 0) {
+            const safeSpendLimit = currentMonthIncome - monthlySavingsLimit;
+            if (safeSpendLimit > 0) {
+                const percentage = (currentMonthExpenses / safeSpendLimit) * 100;
+                [100, 90, 80].forEach(threshold => {
+                    if (percentage >= threshold && !savingsAlertThresholds[threshold]) {
+                        toast(`🚨 Savings Protection: Your spending is affecting your ${monthlySavingsLimit} savings goal!`, {
+                            icon: '💰',
+                            style: { borderRadius: '15px', background: '#1e3a8a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
+                        });
+                        newSavingsAlerts[threshold] = true;
+                        alerted = true;
+                    } else if (percentage < threshold) {
+                        newSavingsAlerts[threshold] = false;
+                    }
+                });
+            }
+        }
+
+        if (alerted) {
+            setAlertThresholds(newAlerts);
+            setSavingsAlertThresholds(newSavingsAlerts);
+        }
     };
 
     const fetchTransactions = async () => {
@@ -90,6 +123,16 @@ const Overview = () => {
             toast.success('Savings goal set');
         } catch (error) {
             console.error('Failed to update savings goal', error);
+        }
+    };
+
+    const handleSaveMonthlySavingsLimit = async () => {
+        try {
+            await updateProfile({ monthlySavingsLimit: Number(tempSavingsLimit) });
+            setIsSavingsLimitModalOpen(false);
+            toast.success('Monthly savings target updated');
+        } catch (error) {
+            console.error('Failed to update monthly savings limit', error);
         }
     };
 
@@ -126,7 +169,20 @@ const Overview = () => {
         })
         .reduce((acc, curr) => acc + curr.amount, 0);
 
-    const budgetPercentage = Math.min((currentMonthExpenses / monthlyBudget) * 100, 100);
+    // Current Month Income
+    const currentMonthIncome = transactions
+        .filter(t => {
+            const tDate = new Date(t.date);
+            const now = new Date();
+            return t.type === 'income' && tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
+        })
+        .reduce((acc, curr) => acc + curr.amount, 0);
+
+    const budgetPercentage = Math.min((currentMonthExpenses / (monthlyBudget || 1)) * 100, 100);
+
+    // Monthly Savings calculations
+    const monthlySavingsCurrent = currentMonthIncome - currentMonthExpenses;
+    const monthlySavingsPercentage = monthlySavingsLimit > 0 ? Math.min((Math.max(0, monthlySavingsCurrent) / monthlySavingsLimit) * 100, 100) : 0;
     const budgetColor = budgetPercentage > 90 ? 'bg-red-500' : budgetPercentage > 70 ? 'bg-yellow-500' : 'bg-green-500';
 
     // Weekly Trend Data
@@ -244,7 +300,7 @@ const Overview = () => {
                 </motion.div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
                 {/* Weekly Trend (Spans 2 columns) */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
@@ -354,6 +410,64 @@ const Overview = () => {
                             <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                                 {user?.currency_symbol || '$'}{balance.toLocaleString()}
                                 <span className="text-sm text-gray-400 font-medium ml-1">/ {user?.currency_symbol || '$'}{savingsGoal.toLocaleString()}</span>
+                            </span>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Monthly Savings Limit Tracker (1 column) */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+                    className="glass p-8 rounded-[2rem] shadow-xl flex flex-col justify-between transition-all duration-300 border border-white/10 relative overflow-hidden group"
+                >
+                    <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-10 dark:text-white transition-opacity translate-x-4 -translate-y-4">
+                        <TrendingUp size={120} />
+                    </div>
+
+                    <div className="relative">
+                        <div className="flex justify-between items-center mb-8">
+                            <h4 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">Monthly Target</h4>
+                            <button
+                                onClick={() => setIsSavingsLimitModalOpen(true)}
+                                className="p-3 bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 rounded-2xl transition-all duration-300 shadow-sm border border-white/20"
+                            >
+                                <Settings size={18} className="text-gray-600 dark:text-gray-300" />
+                            </button>
+                        </div>
+
+                        <div className="mb-2 flex justify-between items-end">
+                            <span className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Target Progress</span>
+                            <span className="text-2xl font-black text-green-600 dark:text-green-400">
+                                {monthlySavingsPercentage.toFixed(0)}%
+                            </span>
+                        </div>
+
+                        <div className="w-full bg-gray-200/50 dark:bg-gray-800/50 rounded-full h-5 mb-6 overflow-hidden border border-white/10 p-1">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${monthlySavingsPercentage}%` }}
+                                transition={{ duration: 1.5, ease: "circOut" }}
+                                className="h-full bg-green-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                            />
+                        </div>
+
+                        <div className="bg-gray-100/50 dark:bg-gray-900/30 p-4 rounded-2xl border border-white/5">
+                            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest leading-relaxed">
+                                {monthlySavingsLimit === 0
+                                    ? "Set a monthly savings target to optimize your budget."
+                                    : monthlySavingsCurrent >= monthlySavingsLimit
+                                        ? "Great job! You've already hit your monthly savings goal."
+                                        : `You need to save ${user?.currency_symbol || '$'}${Math.max(0, monthlySavingsLimit - monthlySavingsCurrent).toLocaleString()} more this month.`}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 pt-8 border-t border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Current Savings</span>
+                            <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
+                                {user?.currency_symbol || '$'}{Math.max(0, monthlySavingsCurrent).toLocaleString()}
+                                <span className="text-sm text-gray-400 font-medium ml-1">/ {user?.currency_symbol || '$'}{monthlySavingsLimit.toLocaleString()}</span>
                             </span>
                         </div>
                     </div>
@@ -626,6 +740,68 @@ const Overview = () => {
                                     className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-yellow-500/20 active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
                                 >
                                     Set Vault Goal
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Monthly Savings Limit Settings Modal */}
+            <AnimatePresence>
+                {isSavingsLimitModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsSavingsLimitModalOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-md glass p-8 rounded-[2.5rem] shadow-2xl border border-white/20"
+                        >
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Monthly Savings Target</h3>
+                                <button
+                                    onClick={() => setIsSavingsLimitModalOpen(false)}
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <X size={24} className="text-gray-400" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block">Target Savings ({user?.currency_symbol || '$'})</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            value={tempSavingsLimit}
+                                            onChange={(e) => setTempSavingsLimit(e.target.value)}
+                                            className="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-xl font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                            placeholder="Enter goal amount..."
+                                        />
+                                        <div className="absolute right-6 top-1/2 -translate-y-1/2">
+                                            <TrendingUp className="text-green-500/50" size={24} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-green-500/5 dark:bg-green-500/10 rounded-3xl border border-green-500/10 space-y-2">
+                                    <p className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-widest">Financial Discipline</p>
+                                    <p className="text-xs text-green-800/60 dark:text-green-300/60 font-medium leading-relaxed">
+                                        This goal protects your income. We will alert you if your expenses exceed the "Safe Zone" (Income - Savings Target).
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={handleSaveMonthlySavingsLimit}
+                                    className="w-full bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-green-500/20 active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
+                                >
+                                    Set Monthly Target
                                 </button>
                             </div>
                         </motion.div>

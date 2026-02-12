@@ -55,6 +55,10 @@ const UserSchema = new mongoose.Schema({
     savingsGoalCategory: {
         type: String,
         default: 'General'
+    },
+    monthlySavingsLimit: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true });
 

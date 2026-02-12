@@ -89,6 +89,7 @@ const loginUser = async (req, res) => {
                 monthlyBudget: user.monthlyBudget,
                 savingsGoal: user.savingsGoal,
                 savingsGoalCategory: user.savingsGoalCategory,
+                monthlySavingsLimit: user.monthlySavingsLimit,
                 user_metadata: {
                     name: user.name,
                     nickname: user.nickname,
@@ -125,6 +126,7 @@ const updateProfile = async (req, res) => {
         user.monthlyBudget = req.body.monthlyBudget !== undefined ? req.body.monthlyBudget : user.monthlyBudget;
         user.savingsGoal = req.body.savingsGoal !== undefined ? req.body.savingsGoal : user.savingsGoal;
         user.savingsGoalCategory = req.body.savingsGoalCategory || user.savingsGoalCategory;
+        user.monthlySavingsLimit = req.body.monthlySavingsLimit !== undefined ? req.body.monthlySavingsLimit : user.monthlySavingsLimit;
 
         const updatedUser = await user.save();
 
@@ -137,6 +139,7 @@ const updateProfile = async (req, res) => {
             monthlyBudget: updatedUser.monthlyBudget,
             savingsGoal: updatedUser.savingsGoal,
             savingsGoalCategory: updatedUser.savingsGoalCategory,
+            monthlySavingsLimit: updatedUser.monthlySavingsLimit,
             token: generateToken(updatedUser._id),
             user_metadata: {
                 name: updatedUser.name,
@@ -198,6 +201,7 @@ const googleLogin = async (req, res) => {
             monthlyBudget: user.monthlyBudget,
             savingsGoal: user.savingsGoal,
             savingsGoalCategory: user.savingsGoalCategory,
+            monthlySavingsLimit: user.monthlySavingsLimit,
             user_metadata: {
                 name: user.name,
                 nickname: user.nickname,
