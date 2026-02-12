@@ -43,6 +43,10 @@ const UserSchema = new mongoose.Schema({
     lastReportSent: {
         type: Date,
         default: Date.now
+    },
+    monthlyBudget: {
+        type: Number,
+        default: 2000
     }
 }, { timestamps: true });
 

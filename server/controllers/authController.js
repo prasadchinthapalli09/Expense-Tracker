@@ -86,6 +86,7 @@ const loginUser = async (req, res) => {
                 country: user.country,
                 currency_symbol: user.currency_symbol,
                 token: generateToken(user._id),
+                monthlyBudget: user.monthlyBudget,
                 user_metadata: {
                     name: user.name,
                     nickname: user.nickname,
@@ -119,6 +120,7 @@ const updateProfile = async (req, res) => {
         user.mobile = req.body.mobile || user.mobile;
         user.currency_symbol = req.body.currency_symbol || user.currency_symbol;
         user.statsFrequency = req.body.statsFrequency || user.statsFrequency;
+        user.monthlyBudget = req.body.monthlyBudget !== undefined ? req.body.monthlyBudget : user.monthlyBudget;
 
         const updatedUser = await user.save();
 
@@ -128,6 +130,7 @@ const updateProfile = async (req, res) => {
             email: updatedUser.email,
             currency_symbol: updatedUser.currency_symbol,
             statsFrequency: updatedUser.statsFrequency,
+            monthlyBudget: updatedUser.monthlyBudget,
             token: generateToken(updatedUser._id),
             user_metadata: {
                 name: updatedUser.name,
@@ -186,6 +189,7 @@ const googleLogin = async (req, res) => {
             country: user.country,
             currency_symbol: user.currency_symbol,
             token: generateToken(user._id),
+            monthlyBudget: user.monthlyBudget,
             user_metadata: {
                 name: user.name,
                 nickname: user.nickname,
