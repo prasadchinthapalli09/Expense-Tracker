@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, ArrowUpCircle, ArrowDownCircle, Search, Calendar, Filter, Edit2, X } from 'lucide-react';
+import { Trash2, ArrowUpCircle, ArrowDownCircle, Search, Calendar, Filter, Edit2, X, Download, FileText } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import EditTransactionModal from './EditTransactionModal';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import toast from 'react-hot-toast';
 
 const ManageTransactions = () => {
     const { user } = useAuth();
@@ -72,6 +75,55 @@ const ManageTransactions = () => {
         setFilterCategory('All');
         setStartDate('');
         setEndDate('');
+    };
+
+    const exportToCSV = () => {
+        const headers = ['Date,Type,Category,Amount,Description\n'];
+        const rows = filteredTransactions.map(t => {
+            return `${new Date(t.date).toLocaleDateString()},${t.type},${t.category},${t.amount},"${t.description || ''}"\n`;
+        });
+
+        const csvContent = headers.concat(rows).join('');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `transactions_${new Date().toLocaleDateString()}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('CSV Downloaded');
+    };
+
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        doc.setFontSize(20);
+        doc.text('Expense Tracker Report', 14, 22);
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+        const tableColumn = ["Date", "Type", "Category", "Amount", "Description"];
+        const tableRows = filteredTransactions.map(t => [
+            new Date(t.date).toLocaleDateString(),
+            t.type.toUpperCase(),
+            t.category,
+            `$${t.amount.toLocaleString()}`,
+            t.description || '-'
+        ]);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 40,
+            theme: 'striped',
+            headStyles: { fillGray: [41, 128, 185], textColor: 255 },
+            alternateRowStyles: { fillGray: [245, 245, 245] }
+        });
+
+        doc.save(`report_${new Date().toLocaleDateString()}.pdf`);
+        toast.success('PDF Downloaded');
     };
 
     return (
@@ -144,6 +196,25 @@ const ManageTransactions = () => {
                         <X size={12} /> Reset Filters
                     </button>
                 )}
+            </div>
+
+            {/* Export Actions */}
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">History</h3>
+                <div className="flex gap-2">
+                    <button
+                        onClick={exportToCSV}
+                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                    >
+                        <Download size={14} /> CSV
+                    </button>
+                    <button
+                        onClick={exportToPDF}
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20"
+                    >
+                        <FileText size={14} /> PDF Report
+                    </button>
+                </div>
             </div>
 
             {loading ? (

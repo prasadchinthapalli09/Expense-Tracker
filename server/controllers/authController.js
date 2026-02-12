@@ -87,6 +87,8 @@ const loginUser = async (req, res) => {
                 currency_symbol: user.currency_symbol,
                 token: generateToken(user._id),
                 monthlyBudget: user.monthlyBudget,
+                savingsGoal: user.savingsGoal,
+                savingsGoalCategory: user.savingsGoalCategory,
                 user_metadata: {
                     name: user.name,
                     nickname: user.nickname,
@@ -121,6 +123,8 @@ const updateProfile = async (req, res) => {
         user.currency_symbol = req.body.currency_symbol || user.currency_symbol;
         user.statsFrequency = req.body.statsFrequency || user.statsFrequency;
         user.monthlyBudget = req.body.monthlyBudget !== undefined ? req.body.monthlyBudget : user.monthlyBudget;
+        user.savingsGoal = req.body.savingsGoal !== undefined ? req.body.savingsGoal : user.savingsGoal;
+        user.savingsGoalCategory = req.body.savingsGoalCategory || user.savingsGoalCategory;
 
         const updatedUser = await user.save();
 
@@ -131,6 +135,8 @@ const updateProfile = async (req, res) => {
             currency_symbol: updatedUser.currency_symbol,
             statsFrequency: updatedUser.statsFrequency,
             monthlyBudget: updatedUser.monthlyBudget,
+            savingsGoal: updatedUser.savingsGoal,
+            savingsGoalCategory: updatedUser.savingsGoalCategory,
             token: generateToken(updatedUser._id),
             user_metadata: {
                 name: updatedUser.name,
@@ -190,6 +196,8 @@ const googleLogin = async (req, res) => {
             currency_symbol: user.currency_symbol,
             token: generateToken(user._id),
             monthlyBudget: user.monthlyBudget,
+            savingsGoal: user.savingsGoal,
+            savingsGoalCategory: user.savingsGoalCategory,
             user_metadata: {
                 name: user.name,
                 nickname: user.nickname,

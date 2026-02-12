@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid, BarChart, Bar } from 'recharts';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { TrendingUp, TrendingDown, Wallet, Clock, ArrowRight, Settings, X, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Clock, ArrowRight, Settings, X, Target, BarChart3, Star, Bell } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Overview = () => {
     const { user, updateProfile } = useAuth();
@@ -14,6 +15,10 @@ const Overview = () => {
     const [monthlyBudget, setMonthlyBudget] = useState(user?.monthlyBudget || 2000);
     const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
     const [tempBudget, setTempBudget] = useState(user?.monthlyBudget || 2000);
+    const [savingsGoal, setSavingsGoal] = useState(user?.savingsGoal || 0);
+    const [isSavingsModalOpen, setIsSavingsModalOpen] = useState(false);
+    const [tempSavings, setTempSavings] = useState(user?.savingsGoal || 0);
+    const [alertThresholds, setAlertThresholds] = useState({ 80: false, 90: false, 100: false });
 
     useEffect(() => {
         fetchTransactions();
@@ -24,7 +29,38 @@ const Overview = () => {
             setMonthlyBudget(user.monthlyBudget);
             setTempBudget(user.monthlyBudget);
         }
-    }, [user?.monthlyBudget]);
+        if (user?.savingsGoal) {
+            setSavingsGoal(user.savingsGoal);
+            setTempSavings(user.savingsGoal);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        checkBudgetAlerts();
+    }, [transactions, monthlyBudget]);
+
+    const checkBudgetAlerts = () => {
+        if (!monthlyBudget || monthlyBudget <= 0) return;
+
+        const percentage = (currentMonthExpenses / monthlyBudget) * 100;
+        const newAlerts = { ...alertThresholds };
+        let alerted = false;
+
+        [100, 90, 80].forEach(threshold => {
+            if (percentage >= threshold && !alertThresholds[threshold]) {
+                toast(`⚠️ Budget Alert: You've used ${threshold}% of your limit!`, {
+                    icon: '🔔',
+                    style: { borderRadius: '15px', background: '#111827', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
+                });
+                newAlerts[threshold] = true;
+                alerted = true;
+            } else if (percentage < threshold) {
+                newAlerts[threshold] = false;
+            }
+        });
+
+        if (alerted) setAlertThresholds(newAlerts);
+    };
 
     const fetchTransactions = async () => {
         try {
@@ -41,8 +77,19 @@ const Overview = () => {
         try {
             await updateProfile({ monthlyBudget: Number(tempBudget) });
             setIsBudgetModalOpen(false);
+            toast.success('Budget goal updated');
         } catch (error) {
             console.error('Failed to update budget', error);
+        }
+    };
+
+    const handleSaveSavings = async () => {
+        try {
+            await updateProfile({ savingsGoal: Number(tempSavings) });
+            setIsSavingsModalOpen(false);
+            toast.success('Savings goal set');
+        } catch (error) {
+            console.error('Failed to update savings goal', error);
         }
     };
 
@@ -103,6 +150,41 @@ const Overview = () => {
     };
 
     const weeklyTrendData = getWeeklyTrend();
+
+    // Monthly Comparison Data (Last 6 months)
+    const getMonthlyComparison = () => {
+        const months = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            months.push({
+                name: d.toLocaleString('default', { month: 'short' }),
+                month: d.getMonth(),
+                year: d.getFullYear(),
+                income: 0,
+                expense: 0
+            });
+        }
+
+        months.forEach(m => {
+            const income = transactions
+                .filter(t => t.type === 'income' && new Date(t.date).getMonth() === m.month && new Date(t.date).getFullYear() === m.year)
+                .reduce((acc, curr) => acc + curr.amount, 0);
+
+            const expense = transactions
+                .filter(t => t.type === 'expense' && new Date(t.date).getMonth() === m.month && new Date(t.date).getFullYear() === m.year)
+                .reduce((acc, curr) => acc + curr.amount, 0);
+
+            m.income = income;
+            m.expense = expense;
+        });
+
+        return months;
+    };
+
+    const monthlyComparisonData = getMonthlyComparison();
+
+    const savingsPercentage = savingsGoal > 0 ? Math.min((balance / savingsGoal) * 100, 100) : 0;
 
     // Recent Activity
     const recentActivity = [...transactions]
@@ -219,20 +301,20 @@ const Overview = () => {
                     </div>
                 </motion.div>
 
-                {/* Budget Tracker (1 column) */}
+                {/* Savings Goal Tracker (1 column) */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
                     className="glass p-8 rounded-[2rem] shadow-xl flex flex-col justify-between transition-all duration-300 border border-white/10 relative overflow-hidden group"
                 >
                     <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-10 dark:text-white transition-opacity translate-x-4 -translate-y-4">
-                        <Target size={120} />
+                        <Star size={120} />
                     </div>
 
                     <div className="relative">
                         <div className="flex justify-between items-center mb-8">
-                            <h4 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">Budget</h4>
+                            <h4 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">Savings Goal</h4>
                             <button
-                                onClick={() => setIsBudgetModalOpen(true)}
+                                onClick={() => setIsSavingsModalOpen(true)}
                                 className="p-3 bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 rounded-2xl transition-all duration-300 shadow-sm border border-white/20"
                             >
                                 <Settings size={18} className="text-gray-600 dark:text-gray-300" />
@@ -240,38 +322,86 @@ const Overview = () => {
                         </div>
 
                         <div className="mb-2 flex justify-between items-end">
-                            <span className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Month Progress</span>
-                            <span className="text-2xl font-black text-gray-900 dark:text-white">
-                                {budgetPercentage.toFixed(0)}%
+                            <span className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Goal Progress</span>
+                            <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
+                                {savingsPercentage.toFixed(0)}%
                             </span>
                         </div>
 
                         <div className="w-full bg-gray-200/50 dark:bg-gray-800/50 rounded-full h-5 mb-6 overflow-hidden border border-white/10 p-1">
                             <motion.div
                                 initial={{ width: 0 }}
-                                animate={{ width: `${budgetPercentage}%` }}
+                                animate={{ width: `${savingsPercentage}%` }}
                                 transition={{ duration: 1.5, ease: "circOut" }}
-                                className={`h-full ${budgetColor} rounded-full shadow-[0_0_15px_rgba(0,0,0,0.1)]`}
+                                className="h-full bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                             />
                         </div>
 
                         <div className="bg-gray-100/50 dark:bg-gray-900/30 p-4 rounded-2xl border border-white/5">
                             <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest leading-relaxed">
-                                {budgetPercentage >= 100
-                                    ? "Major spending overlap! You've crossed your target."
-                                    : `Focus on priorities. You've utilised ${budgetPercentage.toFixed(0)}% of the limit.`}
+                                {savingsGoal === 0
+                                    ? "Set a savings target to begin your wealth building journey."
+                                    : balance >= savingsGoal
+                                        ? "Congratulations! You've reached your savings goal."
+                                        : `You need $${(savingsGoal - balance).toLocaleString()} more to reach your target.`}
                             </p>
                         </div>
                     </div>
 
                     <div className="mt-8 pt-8 border-t border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between">
                         <div className="flex flex-col">
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Financial Runway</span>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Total Savings</span>
                             <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
-                                ${Math.max(0, monthlyBudget - currentMonthExpenses).toLocaleString()}
-                                <span className="text-sm text-gray-400 font-medium ml-1">Left</span>
+                                ${balance.toLocaleString()}
+                                <span className="text-sm text-gray-400 font-medium ml-1">/ ${savingsGoal.toLocaleString()}</span>
                             </span>
                         </div>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Monthly Comparison Bar Chart */}
+            <div className="grid grid-cols-1 gap-6 mb-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+                    className="glass p-8 rounded-[2rem] shadow-xl min-h-[400px] border border-white/10"
+                >
+                    <div className="flex justify-between items-center mb-8">
+                        <h4 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">Performance History</h4>
+                        <div className="flex gap-4">
+                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-green-500">
+                                <span className="w-2 h-2 rounded-full bg-green-500" /> Income
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-red-500">
+                                <span className="w-2 h-2 rounded-full bg-red-500" /> Expense
+                            </div>
+                        </div>
+                    </div>
+                    <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={monthlyComparisonData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: isDark ? '#9CA3AF' : '#6B7280', fontSize: 12, fontWeight: 700 }}
+                                />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: isDark ? '#4B5563' : '#9CA3AF', fontSize: 10 }} />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: isDark ? '#111827' : '#FFFFFF',
+                                        border: 'none',
+                                        borderRadius: '20px',
+                                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+                                        padding: '12px 16px'
+                                    }}
+                                    cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                                />
+                                <Bar dataKey="income" fill="#10B981" radius={[6, 6, 0, 0]} barSize={20} animationDuration={1500} />
+                                <Bar dataKey="expense" fill="#EF4444" radius={[6, 6, 0, 0]} barSize={20} animationDuration={1500} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 </motion.div>
             </div>
@@ -434,6 +564,68 @@ const Overview = () => {
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
                                 >
                                     Confirm Target
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Savings Goal Settings Modal */}
+            <AnimatePresence>
+                {isSavingsModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsSavingsModalOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-md glass p-8 rounded-[2.5rem] shadow-2xl border border-white/20"
+                        >
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Vault Target</h3>
+                                <button
+                                    onClick={() => setIsSavingsModalOpen(false)}
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <X size={24} className="text-gray-400" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block">Total Goal ($)</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            value={tempSavings}
+                                            onChange={(e) => setTempSavings(e.target.value)}
+                                            className="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-xl font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                            placeholder="Enter goal amount..."
+                                        />
+                                        <div className="absolute right-6 top-1/2 -translate-y-1/2">
+                                            <Star className="text-yellow-500/50" size={24} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-yellow-500/5 dark:bg-yellow-500/10 rounded-3xl border border-yellow-500/10 space-y-2">
+                                    <p className="text-xs font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-widest">Wealth Strategy</p>
+                                    <p className="text-xs text-yellow-800/60 dark:text-yellow-300/60 font-medium leading-relaxed">
+                                        Setting a specific target helps you stay disciplined. This goal tracks your total lifetime balance against your target.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={handleSaveSavings}
+                                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-yellow-500/20 active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
+                                >
+                                    Set Vault Goal
                                 </button>
                             </div>
                         </motion.div>
