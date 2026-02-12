@@ -88,7 +88,7 @@ const AddTransaction = () => {
                     <Input
                         icon={DollarSign}
                         type="number"
-                        placeHolder="Amount"
+                        placeHolder={`Amount (${user?.currency_symbol || '$'})`}
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         required

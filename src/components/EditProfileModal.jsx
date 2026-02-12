@@ -96,7 +96,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
                             label="Currency Symbol"
                             value={currency}
                             onChange={(e) => setCurrency(e.target.value)}
-                            placeHolder="$"
+                            placeHolder={user?.currency_symbol || '$'}
                         />
 
                         <div className="pt-2">

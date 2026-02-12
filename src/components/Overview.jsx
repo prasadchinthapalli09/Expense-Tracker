@@ -205,7 +205,7 @@ const Overview = () => {
                     <div>
                         <p className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Total Balance</p>
                         <h3 className="text-3xl font-black text-gray-900 dark:text-white mt-1">
-                            ${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            {user?.currency_symbol || '$'}{balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </h3>
                     </div>
                     <div className="p-4 bg-blue-500/10 dark:bg-blue-500/20 rounded-3xl text-blue-600 dark:text-blue-400 border border-blue-500/20">
@@ -220,7 +220,7 @@ const Overview = () => {
                     <div>
                         <p className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Income</p>
                         <h3 className="text-3xl font-black text-green-600 dark:text-green-500 mt-1">
-                            +${totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            +{user?.currency_symbol || '$'}{totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </h3>
                     </div>
                     <div className="p-4 bg-green-500/10 dark:bg-green-500/20 rounded-3xl text-green-600 dark:text-green-500 border border-green-500/20">
@@ -235,7 +235,7 @@ const Overview = () => {
                     <div>
                         <p className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Expense</p>
                         <h3 className="text-3xl font-black text-red-600 dark:text-red-500 mt-1">
-                            -${totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            -{user?.currency_symbol || '$'}{totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </h3>
                     </div>
                     <div className="p-4 bg-red-500/10 dark:bg-red-500/20 rounded-3xl text-red-600 dark:text-red-500 border border-red-500/20">
@@ -343,7 +343,7 @@ const Overview = () => {
                                     ? "Set a savings target to begin your wealth building journey."
                                     : balance >= savingsGoal
                                         ? "Congratulations! You've reached your savings goal."
-                                        : `You need $${(savingsGoal - balance).toLocaleString()} more to reach your target.`}
+                                        : `You need ${user?.currency_symbol || '$'}${(savingsGoal - balance).toLocaleString()} more to reach your target.`}
                             </p>
                         </div>
                     </div>
@@ -352,8 +352,8 @@ const Overview = () => {
                         <div className="flex flex-col">
                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Total Savings</span>
                             <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
-                                ${balance.toLocaleString()}
-                                <span className="text-sm text-gray-400 font-medium ml-1">/ ${savingsGoal.toLocaleString()}</span>
+                                {user?.currency_symbol || '$'}{balance.toLocaleString()}
+                                <span className="text-sm text-gray-400 font-medium ml-1">/ {user?.currency_symbol || '$'}{savingsGoal.toLocaleString()}</span>
                             </span>
                         </div>
                     </div>
@@ -493,7 +493,7 @@ const Overview = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className={`text-lg font-black ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                            {t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            {t.type === 'income' ? '+' : '-'}{user?.currency_symbol || '$'}{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                         </p>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Confirmed</p>
                                     </div>
@@ -537,7 +537,7 @@ const Overview = () => {
 
                             <div className="space-y-6">
                                 <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block">Target Amount ($)</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block">Target Amount ({user?.currency_symbol || '$'})</label>
                                     <div className="relative">
                                         <input
                                             type="number"
@@ -599,7 +599,7 @@ const Overview = () => {
 
                             <div className="space-y-6">
                                 <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block">Total Goal ($)</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block">Total Goal ({user?.currency_symbol || '$'})</label>
                                     <div className="relative">
                                         <input
                                             type="number"

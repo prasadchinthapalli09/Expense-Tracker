@@ -109,7 +109,7 @@ const ManageTransactions = () => {
             new Date(t.date).toLocaleDateString(),
             t.type.toUpperCase(),
             t.category,
-            `$${t.amount.toLocaleString()}`,
+            `${user?.currency_symbol || '$'}${t.amount.toLocaleString()}`,
             t.description || '-'
         ]);
 
@@ -249,7 +249,7 @@ const ManageTransactions = () => {
 
                                 <div className="flex items-center gap-6">
                                     <span className={`font-black text-xl ${t.type === 'income' ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
-                                        {t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        {t.type === 'income' ? '+' : '-'}{user?.currency_symbol || '$'}{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <button
