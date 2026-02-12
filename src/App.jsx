@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -21,6 +22,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
+          <Toaster position="top-center" reverseOrder={false} />
           <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-300 font-sans">
             <Routes>
               <Route path="/login" element={<Login />} />
