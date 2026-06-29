@@ -12,9 +12,7 @@ import transactionRoutes from './routes/transactionRoutes.js';
 // Load environment variables
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = process.cwd();
 
 async function startServer() {
   const app = express();
