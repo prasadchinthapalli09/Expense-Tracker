@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx backend/server.js",
-    "build": "vite build && esbuild backend/server.js --bundle --platform=node --format=esm --outfile=server.js --external:vite --external:express --external:mongoose --external:bcryptjs --external:jsonwebtoken --external:cors --external:morgan --external:dotenv",
+    "dev": "tsx server/server.js",
+    "build": "vite build && esbuild server/server.js --bundle --platform=node --format=esm --outfile=server.js --external:vite --external:express --external:mongoose --external:bcryptjs --external:jsonwebtoken --external:cors --external:morgan --external:dotenv",
     "start": "NODE_ENV=production node server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
