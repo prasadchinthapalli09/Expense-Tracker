@@ -9,5 +9,4 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGO_URI
-        sync: false
-        description: "Optional MongoDB Atlas connection string. Leave empty to use local JSON file fallback."
+        value: mongodb+srv://spendlyuser:prasad1234@cluster0.rmlisgh.mongodb.net/?appName=Cluster0
