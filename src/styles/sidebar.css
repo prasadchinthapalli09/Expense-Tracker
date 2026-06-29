@@ -1,0 +1,9 @@
+/* ===== client/src/styles/sidebar.css ===== */
+/* Sidebar visual system configurations */
+/* Modeled directly via Tailwind CSS responsive properties inside Sidebar.tsx */
+
+.sidebar-container {
+  width: 260px;
+  background-color: #1E1E2E;
+  color: #CDD6F4;
+}

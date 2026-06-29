@@ -1,0 +1,6 @@
+{
+  "name": "Expense Tracker",
+  "description": "A sleek, highly polished full-stack expense tracker with secure user accounts, dynamic summaries, structured category splits, and charts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

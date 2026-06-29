@@ -1,0 +1,25 @@
+/* ===== client/src/styles/global.css ===== */
+/* Clean Minimalism global utility parameters */
+/* Fully integrated with Tailwind CSS engine. */
+
+:root {
+  --color-primary: #6C63FF;
+  --color-sidebar-bg: #1E1E2E;
+  --color-sidebar-text: #CDD6F4;
+  --color-main-bg: #F4F6FA;
+  --color-card-bg: #FFFFFF;
+  --color-income: #2ECC71;
+  --color-expense: #E74C3C;
+  --color-text-dark: #2D3436;
+  --color-text-muted: #636E72;
+  --color-border: #E0E0E0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-main-bg);
+  color: var(--color-text-dark);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}

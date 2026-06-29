@@ -1,0 +1,7 @@
+/* ===== client/src/styles/auth.css ===== */
+/* Auth pages styling parameters */
+/* Styled with modern utility components directly inside Login.tsx & Register.tsx */
+
+.auth-container {
+  background-color: #F4F6FA;
+}

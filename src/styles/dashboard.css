@@ -1,0 +1,7 @@
+/* ===== client/src/styles/dashboard.css ===== */
+/* Dashboard grid system alignments */
+/* Styled natively using Tailwind grid-cols configurations inside Dashboard.tsx */
+
+.dashboard-grid {
+  gap: 2rem;
+}

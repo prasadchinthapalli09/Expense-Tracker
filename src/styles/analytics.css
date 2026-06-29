@@ -1,0 +1,8 @@
+/* ===== client/src/styles/analytics.css ===== */
+/* Analytics visual layout systems */
+/* Styled natively using flex-wrap and grid alignments in Analytics.tsx */
+
+.chart-viewport {
+  position: relative;
+  width: 100%;
+}
