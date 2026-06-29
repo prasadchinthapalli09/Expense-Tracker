@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: expense-tracker
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+        description: "Optional MongoDB Atlas connection string. Leave empty to use local JSON file fallback."
