@@ -1,4 +1,3 @@
-# ===== README.md =====
 # 📊 Expense Tracker Full-Stack Application
 
 A elegant, fully-responsive full-stack Expense Tracker web application built using modern web technologies. Engineered with a **Clean Minimalism** design aesthetic, it empowers users with secure JWT authorization, intuitive financial entries, and advanced visual dashboards.
